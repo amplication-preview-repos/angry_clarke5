@@ -27,6 +27,19 @@ model ServiceStatus {
   updatedAt        DateTime                 @updatedAt
 }
 
+model DnsMonitor {
+  createdAt   DateTime              @default(now())
+  domain      String?
+  id          String                @id @default(cuid())
+  lastChecked DateTime?
+  status      EnumDnsMonitorStatus?
+  updatedAt   DateTime              @updatedAt
+}
+
 enum EnumServiceStatusStatus {
+  Option1
+}
+
+enum EnumDnsMonitorStatus {
   Option1
 }

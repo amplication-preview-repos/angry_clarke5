@@ -13,6 +13,10 @@ import { ServiceStatusList } from "./serviceStatus/ServiceStatusList";
 import { ServiceStatusCreate } from "./serviceStatus/ServiceStatusCreate";
 import { ServiceStatusEdit } from "./serviceStatus/ServiceStatusEdit";
 import { ServiceStatusShow } from "./serviceStatus/ServiceStatusShow";
+import { DnsMonitorList } from "./dnsMonitor/DnsMonitorList";
+import { DnsMonitorCreate } from "./dnsMonitor/DnsMonitorCreate";
+import { DnsMonitorEdit } from "./dnsMonitor/DnsMonitorEdit";
+import { DnsMonitorShow } from "./dnsMonitor/DnsMonitorShow";
 import { jwtAuthProvider } from "./auth-provider/ra-auth-jwt";
 
 const App = (): React.ReactElement => {
@@ -52,6 +56,13 @@ const App = (): React.ReactElement => {
           edit={ServiceStatusEdit}
           create={ServiceStatusCreate}
           show={ServiceStatusShow}
+        />
+        <Resource
+          name="DnsMonitor"
+          list={DnsMonitorList}
+          edit={DnsMonitorEdit}
+          create={DnsMonitorCreate}
+          show={DnsMonitorShow}
         />
       </Admin>
     </div>
