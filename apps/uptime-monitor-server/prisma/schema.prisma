@@ -1,0 +1,32 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DB_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model ServiceMonitor {
+  createdAt       DateTime        @default(now())
+  id              String          @id @default(cuid())
+  isActive        Boolean?
+  name            String?
+  serviceStatuses ServiceStatus[]
+  updatedAt       DateTime        @updatedAt
+  url             String?
+}
+
+model ServiceStatus {
+  checkedAt        DateTime?
+  createdAt        DateTime                 @default(now())
+  id               String                   @id @default(cuid())
+  serviceMonitor   ServiceMonitor?          @relation(fields: [serviceMonitorId], references: [id])
+  serviceMonitorId String?
+  status           EnumServiceStatusStatus?
+  updatedAt        DateTime                 @updatedAt
+}
+
+enum EnumServiceStatusStatus {
+  Option1
+}
