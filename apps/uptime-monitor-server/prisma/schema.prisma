@@ -36,6 +36,26 @@ model DnsMonitor {
   updatedAt   DateTime              @updatedAt
 }
 
+model UserLogin {
+  createdAt     DateTime  @default(now())
+  id            String    @id @default(cuid())
+  lastLoginDate DateTime?
+  passwordHash  String?
+  role          Role?     @relation(fields: [roleId], references: [id])
+  roleId        String?
+  updatedAt     DateTime  @updatedAt
+  username      String?
+}
+
+model Role {
+  createdAt   DateTime    @default(now())
+  description String?
+  id          String      @id @default(cuid())
+  name        String?
+  updatedAt   DateTime    @updatedAt
+  userLogins  UserLogin[]
+}
+
 enum EnumServiceStatusStatus {
   Option1
 }

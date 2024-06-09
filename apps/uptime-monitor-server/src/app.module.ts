@@ -2,6 +2,8 @@ import { Module } from "@nestjs/common";
 import { ServiceMonitorModule } from "./serviceMonitor/serviceMonitor.module";
 import { ServiceStatusModule } from "./serviceStatus/serviceStatus.module";
 import { DnsMonitorModule } from "./dnsMonitor/dnsMonitor.module";
+import { UserLoginModule } from "./userLogin/userLogin.module";
+import { RoleModule } from "./role/role.module";
 import { HealthModule } from "./health/health.module";
 import { PrismaModule } from "./prisma/prisma.module";
 import { SecretsManagerModule } from "./providers/secrets/secretsManager.module";
@@ -17,6 +19,8 @@ import { ApolloDriver, ApolloDriverConfig } from "@nestjs/apollo";
     ServiceMonitorModule,
     ServiceStatusModule,
     DnsMonitorModule,
+    UserLoginModule,
+    RoleModule,
     HealthModule,
     PrismaModule,
     SecretsManagerModule,

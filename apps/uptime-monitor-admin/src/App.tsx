@@ -17,6 +17,14 @@ import { DnsMonitorList } from "./dnsMonitor/DnsMonitorList";
 import { DnsMonitorCreate } from "./dnsMonitor/DnsMonitorCreate";
 import { DnsMonitorEdit } from "./dnsMonitor/DnsMonitorEdit";
 import { DnsMonitorShow } from "./dnsMonitor/DnsMonitorShow";
+import { UserLoginList } from "./userLogin/UserLoginList";
+import { UserLoginCreate } from "./userLogin/UserLoginCreate";
+import { UserLoginEdit } from "./userLogin/UserLoginEdit";
+import { UserLoginShow } from "./userLogin/UserLoginShow";
+import { RoleList } from "./role/RoleList";
+import { RoleCreate } from "./role/RoleCreate";
+import { RoleEdit } from "./role/RoleEdit";
+import { RoleShow } from "./role/RoleShow";
 import { jwtAuthProvider } from "./auth-provider/ra-auth-jwt";
 
 const App = (): React.ReactElement => {
@@ -63,6 +71,20 @@ const App = (): React.ReactElement => {
           edit={DnsMonitorEdit}
           create={DnsMonitorCreate}
           show={DnsMonitorShow}
+        />
+        <Resource
+          name="UserLogin"
+          list={UserLoginList}
+          edit={UserLoginEdit}
+          create={UserLoginCreate}
+          show={UserLoginShow}
+        />
+        <Resource
+          name="Role"
+          list={RoleList}
+          edit={RoleEdit}
+          create={RoleCreate}
+          show={RoleShow}
         />
       </Admin>
     </div>
