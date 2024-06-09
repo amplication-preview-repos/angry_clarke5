@@ -56,6 +56,18 @@ model Role {
   userLogins  UserLogin[]
 }
 
+model User {
+  createdAt DateTime @default(now())
+  email     String?  @unique
+  firstName String?
+  id        String   @id @default(cuid())
+  lastName  String?
+  password  String
+  roles     Json
+  updatedAt DateTime @updatedAt
+  username  String   @unique
+}
+
 enum EnumServiceStatusStatus {
   Option1
 }

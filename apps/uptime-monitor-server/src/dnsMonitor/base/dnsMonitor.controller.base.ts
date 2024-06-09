@@ -16,17 +16,35 @@ import * as errors from "../../errors";
 import { Request } from "express";
 import { plainToClass } from "class-transformer";
 import { ApiNestedQuery } from "../../decorators/api-nested-query.decorator";
+import * as nestAccessControl from "nest-access-control";
+import * as defaultAuthGuard from "../../auth/defaultAuth.guard";
 import { DnsMonitorService } from "../dnsMonitor.service";
+import { AclValidateRequestInterceptor } from "../../interceptors/aclValidateRequest.interceptor";
+import { AclFilterResponseInterceptor } from "../../interceptors/aclFilterResponse.interceptor";
 import { DnsMonitorCreateInput } from "./DnsMonitorCreateInput";
 import { DnsMonitor } from "./DnsMonitor";
 import { DnsMonitorFindManyArgs } from "./DnsMonitorFindManyArgs";
 import { DnsMonitorWhereUniqueInput } from "./DnsMonitorWhereUniqueInput";
 import { DnsMonitorUpdateInput } from "./DnsMonitorUpdateInput";
 
+@swagger.ApiBearerAuth()
+@common.UseGuards(defaultAuthGuard.DefaultAuthGuard, nestAccessControl.ACGuard)
 export class DnsMonitorControllerBase {
-  constructor(protected readonly service: DnsMonitorService) {}
+  constructor(
+    protected readonly service: DnsMonitorService,
+    protected readonly rolesBuilder: nestAccessControl.RolesBuilder
+  ) {}
+  @common.UseInterceptors(AclValidateRequestInterceptor)
   @common.Post()
   @swagger.ApiCreatedResponse({ type: DnsMonitor })
+  @nestAccessControl.UseRoles({
+    resource: "DnsMonitor",
+    action: "create",
+    possession: "any",
+  })
+  @swagger.ApiForbiddenResponse({
+    type: errors.ForbiddenException,
+  })
   async createDnsMonitor(
     @common.Body() data: DnsMonitorCreateInput
   ): Promise<DnsMonitor> {
@@ -43,9 +61,18 @@ export class DnsMonitorControllerBase {
     });
   }
 
+  @common.UseInterceptors(AclFilterResponseInterceptor)
   @common.Get()
   @swagger.ApiOkResponse({ type: [DnsMonitor] })
   @ApiNestedQuery(DnsMonitorFindManyArgs)
+  @nestAccessControl.UseRoles({
+    resource: "DnsMonitor",
+    action: "read",
+    possession: "any",
+  })
+  @swagger.ApiForbiddenResponse({
+    type: errors.ForbiddenException,
+  })
   async dnsMonitors(@common.Req() request: Request): Promise<DnsMonitor[]> {
     const args = plainToClass(DnsMonitorFindManyArgs, request.query);
     return this.service.dnsMonitors({
@@ -61,9 +88,18 @@ export class DnsMonitorControllerBase {
     });
   }
 
+  @common.UseInterceptors(AclFilterResponseInterceptor)
   @common.Get("/:id")
   @swagger.ApiOkResponse({ type: DnsMonitor })
   @swagger.ApiNotFoundResponse({ type: errors.NotFoundException })
+  @nestAccessControl.UseRoles({
+    resource: "DnsMonitor",
+    action: "read",
+    possession: "own",
+  })
+  @swagger.ApiForbiddenResponse({
+    type: errors.ForbiddenException,
+  })
   async dnsMonitor(
     @common.Param() params: DnsMonitorWhereUniqueInput
   ): Promise<DnsMonitor | null> {
@@ -86,9 +122,18 @@ export class DnsMonitorControllerBase {
     return result;
   }
 
+  @common.UseInterceptors(AclValidateRequestInterceptor)
   @common.Patch("/:id")
   @swagger.ApiOkResponse({ type: DnsMonitor })
   @swagger.ApiNotFoundResponse({ type: errors.NotFoundException })
+  @nestAccessControl.UseRoles({
+    resource: "DnsMonitor",
+    action: "update",
+    possession: "any",
+  })
+  @swagger.ApiForbiddenResponse({
+    type: errors.ForbiddenException,
+  })
   async updateDnsMonitor(
     @common.Param() params: DnsMonitorWhereUniqueInput,
     @common.Body() data: DnsMonitorUpdateInput
@@ -119,6 +164,14 @@ export class DnsMonitorControllerBase {
   @common.Delete("/:id")
   @swagger.ApiOkResponse({ type: DnsMonitor })
   @swagger.ApiNotFoundResponse({ type: errors.NotFoundException })
+  @nestAccessControl.UseRoles({
+    resource: "DnsMonitor",
+    action: "delete",
+    possession: "any",
+  })
+  @swagger.ApiForbiddenResponse({
+    type: errors.ForbiddenException,
+  })
   async deleteDnsMonitor(
     @common.Param() params: DnsMonitorWhereUniqueInput
   ): Promise<DnsMonitor | null> {

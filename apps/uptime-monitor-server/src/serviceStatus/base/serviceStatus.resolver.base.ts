@@ -13,6 +13,12 @@ import * as graphql from "@nestjs/graphql";
 import { GraphQLError } from "graphql";
 import { isRecordNotFoundError } from "../../prisma.util";
 import { MetaQueryPayload } from "../../util/MetaQueryPayload";
+import * as nestAccessControl from "nest-access-control";
+import * as gqlACGuard from "../../auth/gqlAC.guard";
+import { GqlDefaultAuthGuard } from "../../auth/gqlDefaultAuth.guard";
+import * as common from "@nestjs/common";
+import { AclFilterResponseInterceptor } from "../../interceptors/aclFilterResponse.interceptor";
+import { AclValidateRequestInterceptor } from "../../interceptors/aclValidateRequest.interceptor";
 import { ServiceStatus } from "./ServiceStatus";
 import { ServiceStatusCountArgs } from "./ServiceStatusCountArgs";
 import { ServiceStatusFindManyArgs } from "./ServiceStatusFindManyArgs";
@@ -22,10 +28,20 @@ import { UpdateServiceStatusArgs } from "./UpdateServiceStatusArgs";
 import { DeleteServiceStatusArgs } from "./DeleteServiceStatusArgs";
 import { ServiceMonitor } from "../../serviceMonitor/base/ServiceMonitor";
 import { ServiceStatusService } from "../serviceStatus.service";
+@common.UseGuards(GqlDefaultAuthGuard, gqlACGuard.GqlACGuard)
 @graphql.Resolver(() => ServiceStatus)
 export class ServiceStatusResolverBase {
-  constructor(protected readonly service: ServiceStatusService) {}
+  constructor(
+    protected readonly service: ServiceStatusService,
+    protected readonly rolesBuilder: nestAccessControl.RolesBuilder
+  ) {}
 
+  @graphql.Query(() => MetaQueryPayload)
+  @nestAccessControl.UseRoles({
+    resource: "ServiceStatus",
+    action: "read",
+    possession: "any",
+  })
   async _serviceStatusesMeta(
     @graphql.Args() args: ServiceStatusCountArgs
   ): Promise<MetaQueryPayload> {
@@ -35,14 +51,26 @@ export class ServiceStatusResolverBase {
     };
   }
 
+  @common.UseInterceptors(AclFilterResponseInterceptor)
   @graphql.Query(() => [ServiceStatus])
+  @nestAccessControl.UseRoles({
+    resource: "ServiceStatus",
+    action: "read",
+    possession: "any",
+  })
   async serviceStatuses(
     @graphql.Args() args: ServiceStatusFindManyArgs
   ): Promise<ServiceStatus[]> {
     return this.service.serviceStatuses(args);
   }
 
+  @common.UseInterceptors(AclFilterResponseInterceptor)
   @graphql.Query(() => ServiceStatus, { nullable: true })
+  @nestAccessControl.UseRoles({
+    resource: "ServiceStatus",
+    action: "read",
+    possession: "own",
+  })
   async serviceStatus(
     @graphql.Args() args: ServiceStatusFindUniqueArgs
   ): Promise<ServiceStatus | null> {
@@ -53,7 +81,13 @@ export class ServiceStatusResolverBase {
     return result;
   }
 
+  @common.UseInterceptors(AclValidateRequestInterceptor)
   @graphql.Mutation(() => ServiceStatus)
+  @nestAccessControl.UseRoles({
+    resource: "ServiceStatus",
+    action: "create",
+    possession: "any",
+  })
   async createServiceStatus(
     @graphql.Args() args: CreateServiceStatusArgs
   ): Promise<ServiceStatus> {
@@ -71,7 +105,13 @@ export class ServiceStatusResolverBase {
     });
   }
 
+  @common.UseInterceptors(AclValidateRequestInterceptor)
   @graphql.Mutation(() => ServiceStatus)
+  @nestAccessControl.UseRoles({
+    resource: "ServiceStatus",
+    action: "update",
+    possession: "any",
+  })
   async updateServiceStatus(
     @graphql.Args() args: UpdateServiceStatusArgs
   ): Promise<ServiceStatus | null> {
@@ -99,6 +139,11 @@ export class ServiceStatusResolverBase {
   }
 
   @graphql.Mutation(() => ServiceStatus)
+  @nestAccessControl.UseRoles({
+    resource: "ServiceStatus",
+    action: "delete",
+    possession: "any",
+  })
   async deleteServiceStatus(
     @graphql.Args() args: DeleteServiceStatusArgs
   ): Promise<ServiceStatus | null> {
@@ -114,9 +159,15 @@ export class ServiceStatusResolverBase {
     }
   }
 
+  @common.UseInterceptors(AclFilterResponseInterceptor)
   @graphql.ResolveField(() => ServiceMonitor, {
     nullable: true,
     name: "serviceMonitor",
+  })
+  @nestAccessControl.UseRoles({
+    resource: "ServiceMonitor",
+    action: "read",
+    possession: "any",
   })
   async getServiceMonitor(
     @graphql.Parent() parent: ServiceStatus

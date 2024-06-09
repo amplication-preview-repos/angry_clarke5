@@ -16,7 +16,11 @@ import * as errors from "../../errors";
 import { Request } from "express";
 import { plainToClass } from "class-transformer";
 import { ApiNestedQuery } from "../../decorators/api-nested-query.decorator";
+import * as nestAccessControl from "nest-access-control";
+import * as defaultAuthGuard from "../../auth/defaultAuth.guard";
 import { ServiceMonitorService } from "../serviceMonitor.service";
+import { AclValidateRequestInterceptor } from "../../interceptors/aclValidateRequest.interceptor";
+import { AclFilterResponseInterceptor } from "../../interceptors/aclFilterResponse.interceptor";
 import { ServiceMonitorCreateInput } from "./ServiceMonitorCreateInput";
 import { ServiceMonitor } from "./ServiceMonitor";
 import { ServiceMonitorFindManyArgs } from "./ServiceMonitorFindManyArgs";
@@ -26,10 +30,24 @@ import { ServiceStatusFindManyArgs } from "../../serviceStatus/base/ServiceStatu
 import { ServiceStatus } from "../../serviceStatus/base/ServiceStatus";
 import { ServiceStatusWhereUniqueInput } from "../../serviceStatus/base/ServiceStatusWhereUniqueInput";
 
+@swagger.ApiBearerAuth()
+@common.UseGuards(defaultAuthGuard.DefaultAuthGuard, nestAccessControl.ACGuard)
 export class ServiceMonitorControllerBase {
-  constructor(protected readonly service: ServiceMonitorService) {}
+  constructor(
+    protected readonly service: ServiceMonitorService,
+    protected readonly rolesBuilder: nestAccessControl.RolesBuilder
+  ) {}
+  @common.UseInterceptors(AclValidateRequestInterceptor)
   @common.Post()
   @swagger.ApiCreatedResponse({ type: ServiceMonitor })
+  @nestAccessControl.UseRoles({
+    resource: "ServiceMonitor",
+    action: "create",
+    possession: "any",
+  })
+  @swagger.ApiForbiddenResponse({
+    type: errors.ForbiddenException,
+  })
   async createServiceMonitor(
     @common.Body() data: ServiceMonitorCreateInput
   ): Promise<ServiceMonitor> {
@@ -46,9 +64,18 @@ export class ServiceMonitorControllerBase {
     });
   }
 
+  @common.UseInterceptors(AclFilterResponseInterceptor)
   @common.Get()
   @swagger.ApiOkResponse({ type: [ServiceMonitor] })
   @ApiNestedQuery(ServiceMonitorFindManyArgs)
+  @nestAccessControl.UseRoles({
+    resource: "ServiceMonitor",
+    action: "read",
+    possession: "any",
+  })
+  @swagger.ApiForbiddenResponse({
+    type: errors.ForbiddenException,
+  })
   async serviceMonitors(
     @common.Req() request: Request
   ): Promise<ServiceMonitor[]> {
@@ -66,9 +93,18 @@ export class ServiceMonitorControllerBase {
     });
   }
 
+  @common.UseInterceptors(AclFilterResponseInterceptor)
   @common.Get("/:id")
   @swagger.ApiOkResponse({ type: ServiceMonitor })
   @swagger.ApiNotFoundResponse({ type: errors.NotFoundException })
+  @nestAccessControl.UseRoles({
+    resource: "ServiceMonitor",
+    action: "read",
+    possession: "own",
+  })
+  @swagger.ApiForbiddenResponse({
+    type: errors.ForbiddenException,
+  })
   async serviceMonitor(
     @common.Param() params: ServiceMonitorWhereUniqueInput
   ): Promise<ServiceMonitor | null> {
@@ -91,9 +127,18 @@ export class ServiceMonitorControllerBase {
     return result;
   }
 
+  @common.UseInterceptors(AclValidateRequestInterceptor)
   @common.Patch("/:id")
   @swagger.ApiOkResponse({ type: ServiceMonitor })
   @swagger.ApiNotFoundResponse({ type: errors.NotFoundException })
+  @nestAccessControl.UseRoles({
+    resource: "ServiceMonitor",
+    action: "update",
+    possession: "any",
+  })
+  @swagger.ApiForbiddenResponse({
+    type: errors.ForbiddenException,
+  })
   async updateServiceMonitor(
     @common.Param() params: ServiceMonitorWhereUniqueInput,
     @common.Body() data: ServiceMonitorUpdateInput
@@ -124,6 +169,14 @@ export class ServiceMonitorControllerBase {
   @common.Delete("/:id")
   @swagger.ApiOkResponse({ type: ServiceMonitor })
   @swagger.ApiNotFoundResponse({ type: errors.NotFoundException })
+  @nestAccessControl.UseRoles({
+    resource: "ServiceMonitor",
+    action: "delete",
+    possession: "any",
+  })
+  @swagger.ApiForbiddenResponse({
+    type: errors.ForbiddenException,
+  })
   async deleteServiceMonitor(
     @common.Param() params: ServiceMonitorWhereUniqueInput
   ): Promise<ServiceMonitor | null> {
@@ -149,8 +202,14 @@ export class ServiceMonitorControllerBase {
     }
   }
 
+  @common.UseInterceptors(AclFilterResponseInterceptor)
   @common.Get("/:id/serviceStatuses")
   @ApiNestedQuery(ServiceStatusFindManyArgs)
+  @nestAccessControl.UseRoles({
+    resource: "ServiceStatus",
+    action: "read",
+    possession: "any",
+  })
   async findServiceStatuses(
     @common.Req() request: Request,
     @common.Param() params: ServiceMonitorWhereUniqueInput
@@ -182,6 +241,11 @@ export class ServiceMonitorControllerBase {
   }
 
   @common.Post("/:id/serviceStatuses")
+  @nestAccessControl.UseRoles({
+    resource: "ServiceMonitor",
+    action: "update",
+    possession: "any",
+  })
   async connectServiceStatuses(
     @common.Param() params: ServiceMonitorWhereUniqueInput,
     @common.Body() body: ServiceStatusWhereUniqueInput[]
@@ -199,6 +263,11 @@ export class ServiceMonitorControllerBase {
   }
 
   @common.Patch("/:id/serviceStatuses")
+  @nestAccessControl.UseRoles({
+    resource: "ServiceMonitor",
+    action: "update",
+    possession: "any",
+  })
   async updateServiceStatuses(
     @common.Param() params: ServiceMonitorWhereUniqueInput,
     @common.Body() body: ServiceStatusWhereUniqueInput[]
@@ -216,6 +285,11 @@ export class ServiceMonitorControllerBase {
   }
 
   @common.Delete("/:id/serviceStatuses")
+  @nestAccessControl.UseRoles({
+    resource: "ServiceMonitor",
+    action: "update",
+    possession: "any",
+  })
   async disconnectServiceStatuses(
     @common.Param() params: ServiceMonitorWhereUniqueInput,
     @common.Body() body: ServiceStatusWhereUniqueInput[]

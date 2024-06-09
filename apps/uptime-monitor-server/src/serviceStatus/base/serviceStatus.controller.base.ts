@@ -16,17 +16,35 @@ import * as errors from "../../errors";
 import { Request } from "express";
 import { plainToClass } from "class-transformer";
 import { ApiNestedQuery } from "../../decorators/api-nested-query.decorator";
+import * as nestAccessControl from "nest-access-control";
+import * as defaultAuthGuard from "../../auth/defaultAuth.guard";
 import { ServiceStatusService } from "../serviceStatus.service";
+import { AclValidateRequestInterceptor } from "../../interceptors/aclValidateRequest.interceptor";
+import { AclFilterResponseInterceptor } from "../../interceptors/aclFilterResponse.interceptor";
 import { ServiceStatusCreateInput } from "./ServiceStatusCreateInput";
 import { ServiceStatus } from "./ServiceStatus";
 import { ServiceStatusFindManyArgs } from "./ServiceStatusFindManyArgs";
 import { ServiceStatusWhereUniqueInput } from "./ServiceStatusWhereUniqueInput";
 import { ServiceStatusUpdateInput } from "./ServiceStatusUpdateInput";
 
+@swagger.ApiBearerAuth()
+@common.UseGuards(defaultAuthGuard.DefaultAuthGuard, nestAccessControl.ACGuard)
 export class ServiceStatusControllerBase {
-  constructor(protected readonly service: ServiceStatusService) {}
+  constructor(
+    protected readonly service: ServiceStatusService,
+    protected readonly rolesBuilder: nestAccessControl.RolesBuilder
+  ) {}
+  @common.UseInterceptors(AclValidateRequestInterceptor)
   @common.Post()
   @swagger.ApiCreatedResponse({ type: ServiceStatus })
+  @nestAccessControl.UseRoles({
+    resource: "ServiceStatus",
+    action: "create",
+    possession: "any",
+  })
+  @swagger.ApiForbiddenResponse({
+    type: errors.ForbiddenException,
+  })
   async createServiceStatus(
     @common.Body() data: ServiceStatusCreateInput
   ): Promise<ServiceStatus> {
@@ -57,9 +75,18 @@ export class ServiceStatusControllerBase {
     });
   }
 
+  @common.UseInterceptors(AclFilterResponseInterceptor)
   @common.Get()
   @swagger.ApiOkResponse({ type: [ServiceStatus] })
   @ApiNestedQuery(ServiceStatusFindManyArgs)
+  @nestAccessControl.UseRoles({
+    resource: "ServiceStatus",
+    action: "read",
+    possession: "any",
+  })
+  @swagger.ApiForbiddenResponse({
+    type: errors.ForbiddenException,
+  })
   async serviceStatuses(
     @common.Req() request: Request
   ): Promise<ServiceStatus[]> {
@@ -83,9 +110,18 @@ export class ServiceStatusControllerBase {
     });
   }
 
+  @common.UseInterceptors(AclFilterResponseInterceptor)
   @common.Get("/:id")
   @swagger.ApiOkResponse({ type: ServiceStatus })
   @swagger.ApiNotFoundResponse({ type: errors.NotFoundException })
+  @nestAccessControl.UseRoles({
+    resource: "ServiceStatus",
+    action: "read",
+    possession: "own",
+  })
+  @swagger.ApiForbiddenResponse({
+    type: errors.ForbiddenException,
+  })
   async serviceStatus(
     @common.Param() params: ServiceStatusWhereUniqueInput
   ): Promise<ServiceStatus | null> {
@@ -114,9 +150,18 @@ export class ServiceStatusControllerBase {
     return result;
   }
 
+  @common.UseInterceptors(AclValidateRequestInterceptor)
   @common.Patch("/:id")
   @swagger.ApiOkResponse({ type: ServiceStatus })
   @swagger.ApiNotFoundResponse({ type: errors.NotFoundException })
+  @nestAccessControl.UseRoles({
+    resource: "ServiceStatus",
+    action: "update",
+    possession: "any",
+  })
+  @swagger.ApiForbiddenResponse({
+    type: errors.ForbiddenException,
+  })
   async updateServiceStatus(
     @common.Param() params: ServiceStatusWhereUniqueInput,
     @common.Body() data: ServiceStatusUpdateInput
@@ -161,6 +206,14 @@ export class ServiceStatusControllerBase {
   @common.Delete("/:id")
   @swagger.ApiOkResponse({ type: ServiceStatus })
   @swagger.ApiNotFoundResponse({ type: errors.NotFoundException })
+  @nestAccessControl.UseRoles({
+    resource: "ServiceStatus",
+    action: "delete",
+    possession: "any",
+  })
+  @swagger.ApiForbiddenResponse({
+    type: errors.ForbiddenException,
+  })
   async deleteServiceStatus(
     @common.Param() params: ServiceStatusWhereUniqueInput
   ): Promise<ServiceStatus | null> {
