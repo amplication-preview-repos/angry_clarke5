@@ -1,0 +1,77 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DB_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model ServiceMonitor {
+  createdAt       DateTime        @default(now())
+  id              String          @id @default(cuid())
+  isActive        Boolean?
+  name            String?
+  serviceStatuses ServiceStatus[]
+  updatedAt       DateTime        @updatedAt
+  url             String?
+}
+
+model ServiceStatus {
+  checkedAt        DateTime?
+  createdAt        DateTime                 @default(now())
+  id               String                   @id @default(cuid())
+  serviceMonitor   ServiceMonitor?          @relation(fields: [serviceMonitorId], references: [id])
+  serviceMonitorId String?
+  status           EnumServiceStatusStatus?
+  updatedAt        DateTime                 @updatedAt
+}
+
+model DnsMonitor {
+  createdAt   DateTime              @default(now())
+  domain      String?
+  id          String                @id @default(cuid())
+  lastChecked DateTime?
+  status      EnumDnsMonitorStatus?
+  updatedAt   DateTime              @updatedAt
+}
+
+model UserLogin {
+  createdAt     DateTime  @default(now())
+  id            String    @id @default(cuid())
+  lastLoginDate DateTime?
+  passwordHash  String?
+  role          Role?     @relation(fields: [roleId], references: [id])
+  roleId        String?
+  updatedAt     DateTime  @updatedAt
+  username      String?
+}
+
+model Role {
+  createdAt   DateTime    @default(now())
+  description String?
+  id          String      @id @default(cuid())
+  name        String?
+  updatedAt   DateTime    @updatedAt
+  userLogins  UserLogin[]
+}
+
+model User {
+  createdAt DateTime @default(now())
+  email     String?  @unique
+  firstName String?
+  id        String   @id @default(cuid())
+  lastName  String?
+  password  String
+  roles     Json
+  updatedAt DateTime @updatedAt
+  username  String   @unique
+}
+
+enum EnumServiceStatusStatus {
+  Option1
+}
+
+enum EnumDnsMonitorStatus {
+  Option1
+}
